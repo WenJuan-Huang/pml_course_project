@@ -58,21 +58,22 @@ For the data_test (testing set)
 vars_90NAs_test <- sapply(data_test, def_NAs) 
 data_test <- data_test[,!vars_90NAs_test] 
 ```
-Split training data into training and validation
+
+### Prediction and Cross-validation
+Split the cleaned training data into training and testing sets. 
+Use "random forest" algorithm in caret package and all other variables in the training set in the model training.
+Apply the modelFit on the testing set for cross-validation.
 ```r
 inTrain <- createDataPartition(y=data$classe, p= 0.7, list=FALSE)
 training <- data[inTrain,]
 testing <- data[-inTrain,]
-```
-### Prediction
-Use "rf" method in caret package and all other variables in the training set in the model training and prediction processes.
-
-```r
 modelFit <- train(training$classe ~., data = training, method = "rf")
 test <- predict(modelFit, newdata = testing)
 confusionMatrix(testing$classe, test)
 ```
-Results
+Results and analysis: 
+The cross-validation shows the accuracy of this model is 0.9941. 
+Therefore, the out of sample error is (1 - Accuracy) = 0.0059.
 ```r
 Confusion Matrix and Statistics
 
@@ -106,7 +107,11 @@ Detection Rate         0.2845   0.1918   0.1726   0.1619   0.1832
 Detection Prevalence   0.2845   0.1935   0.1743   0.1638   0.1839
 Balanced Accuracy      0.9976   0.9976   0.9922   0.9942   0.9991
 ```
-### Final predictions on data_test 
+
+### Final predictions on data_test from "pml-testing.csv" file
 ```r
 prediction <- predict(modelFit, newdata = data_test)
+prediction
+ [1] B A B A A E D B A A B C B A E E A B B B
+Levels: A B C D E
 ```
