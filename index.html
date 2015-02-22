@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Pml course project : This project is about predict people&#39;s excises habits using machine learning algorithm learnt from coursera practical machine learning course ">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Pml course project</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/WenJuan-Huang/pml_course_project">View on GitHub</a>
+
+          <h1 id="project_title">Pml course project</h1>
+          <h2 id="project_tagline">This project is about predict people&#39;s excises habits using machine learning algorithm learnt from coursera practical machine learning course </h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/WenJuan-Huang/pml_course_project/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/WenJuan-Huang/pml_course_project/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h2>
+<a id="practical-mechine-learning-course-project-writeup" class="anchor" href="#practical-mechine-learning-course-project-writeup" aria-hidden="true"><span class="octicon octicon-link"></span></a>Practical Mechine Learning Course Project Writeup</h2>
+
+<h3>
+<a id="background" class="anchor" href="#background" aria-hidden="true"><span class="octicon octicon-link"></span></a>Background</h3>
+
+<p>Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively.
+These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks.
+One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it.
+In this project, the goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants.
+They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. 
+More information is available from the website here: <a href="http://groupware.les.inf.puc-rio.br/har">http://groupware.les.inf.puc-rio.br/har</a> (see the section on the Weight Lifting Exercise Dataset).</p>
+
+<h3>
+<a id="download-training-and-testing-data-files" class="anchor" href="#download-training-and-testing-data-files" aria-hidden="true"><span class="octicon octicon-link"></span></a>Download training and testing data files</h3>
+
+<div class="highlight highlight-r"><pre>download.file(<span class="pl-s1"><span class="pl-pds">"</span>http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv<span class="pl-pds">"</span></span>, <span class="pl-v">destfile</span> <span class="pl-k">=</span> <span class="pl-s1"><span class="pl-pds">"</span>pml-training.csv<span class="pl-pds">"</span></span>)
+download.file(<span class="pl-s1"><span class="pl-pds">"</span>http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv<span class="pl-pds">"</span></span>, <span class="pl-v">destfile</span> <span class="pl-k">=</span> <span class="pl-s1"><span class="pl-pds">"</span>pml-testing.csv<span class="pl-pds">"</span></span>)</pre></div>
+
+<h3>
+<a id="pre-processing-data" class="anchor" href="#pre-processing-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Pre-processing data</h3>
+
+<p>The goal of pre-processing data is to obtain a set of concise predictors for the machine learning prediction. 
+The data cleaning process apply to both training and testing data sets.</p>
+
+<p>Read the raw data and set the classe as factor. </p>
+
+<div class="highlight highlight-r"><pre>library(<span class="pl-vo">caret</span>)
+<span class="pl-vo">data</span> <span class="pl-k">&lt;-</span> read.csv(<span class="pl-s1"><span class="pl-pds">"</span>pml-training.csv<span class="pl-pds">"</span></span>, <span class="pl-v">stringsAsFactors</span><span class="pl-k">=</span><span class="pl-c1">FALSE</span>)
+<span class="pl-vo">data</span><span class="pl-k">$</span><span class="pl-vo">classe</span> <span class="pl-k">&lt;-</span> as.factor(<span class="pl-vo">data</span><span class="pl-k">$</span><span class="pl-vo">classe</span>)
+<span class="pl-vo">data_test</span> <span class="pl-k">&lt;-</span> read.csv(<span class="pl-s1"><span class="pl-pds">"</span>pml-testing.csv<span class="pl-pds">"</span></span>, <span class="pl-v">stringsAsFactors</span><span class="pl-k">=</span><span class="pl-c1">FALSE</span>)</pre></div>
+
+<p>Then clean the data: </p>
+
+<p>a. Removing columns with features not related to precition outcomes (first 7 columns)</p>
+
+<div class="highlight highlight-r"><pre><span class="pl-vo">data</span> <span class="pl-k">&lt;-</span> <span class="pl-vo">data</span>[,<span class="pl-k">-</span>c(<span class="pl-c1">1</span><span class="pl-k">:</span><span class="pl-c1">7</span>)]
+<span class="pl-vo">data_test</span> <span class="pl-k">&lt;-</span> <span class="pl-vo">data_test</span>[,<span class="pl-k">-</span>c(<span class="pl-c1">1</span><span class="pl-k">:</span><span class="pl-c1">7</span>)]</pre></div>
+
+<p>b. Removing columns with too little data that are not valuable enough in prediction</p>
+
+<div class="highlight highlight-r"><pre><span class="pl-vo">data</span> <span class="pl-k">&lt;-</span> <span class="pl-vo">data</span>[,<span class="pl-k">-</span>nearZeroVar(<span class="pl-vo">data</span>)]
+<span class="pl-vo">data_test</span> <span class="pl-k">&lt;-</span> <span class="pl-vo">data_test</span>[,<span class="pl-k">-</span>nearZeroVar(<span class="pl-vo">data_test</span>)]</pre></div>
+
+<p>c. Removing columns with too many NAs (&gt;90%)</p>
+
+<p>function 1: 'def_NAs' define variables with na &gt; 90% </p>
+
+<div class="highlight highlight-r"><pre><span class="pl-en">def_NAs</span> <span class="pl-k">&lt;-</span> <span class="pl-k">function</span>(<span class="pl-vo">value</span>){
+        <span class="pl-k">if</span>(sum(is.na(<span class="pl-vo">value</span>))<span class="pl-k">/</span>length(<span class="pl-vo">value</span>) <span class="pl-k">&gt;</span> <span class="pl-c1">0.9</span>){ <span class="pl-c"># if vector is made of more than 90% NAs</span>
+                <span class="pl-vo">res</span> <span class="pl-k">&lt;-</span> <span class="pl-c1">TRUE</span>;                             <span class="pl-c"># return true</span>
+        }<span class="pl-k">else</span>{                                       <span class="pl-c"># if it doesn't</span>
+                <span class="pl-vo">res</span> <span class="pl-k">&lt;-</span> <span class="pl-c1">FALSE</span>;                            <span class="pl-c"># return false</span>
+        }
+        <span class="pl-k">invisible</span>(<span class="pl-vo">res</span>);                              <span class="pl-c"># return a invisible copy of the results</span>
+}</pre></div>
+
+<p>Apply the function on the pml-training data</p>
+
+<div class="highlight highlight-r"><pre><span class="pl-vo">vars_90NAs</span> <span class="pl-k">&lt;-</span> sapply(<span class="pl-vo">data</span>, <span class="pl-vo">def_NAs</span>) <span class="pl-c"># find columns with NA &gt; 90%</span>
+<span class="pl-vo">data</span> <span class="pl-k">&lt;-</span> <span class="pl-vo">data</span>[,<span class="pl-k">!</span><span class="pl-vo">vars_90NAs</span>] <span class="pl-c"># no NA in data anymore in this case</span></pre></div>
+
+<p>Apply the function on the pml-testing data </p>
+
+<div class="highlight highlight-r"><pre><span class="pl-vo">vars_90NAs_test</span> <span class="pl-k">&lt;-</span> sapply(<span class="pl-vo">data_test</span>, <span class="pl-vo">def_NAs</span>) 
+<span class="pl-vo">data_test</span> <span class="pl-k">&lt;-</span> <span class="pl-vo">data_test</span>[,<span class="pl-k">!</span><span class="pl-vo">vars_90NAs_test</span>] </pre></div>
+
+<h3>
+<a id="prediction-and-cross-validation" class="anchor" href="#prediction-and-cross-validation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Prediction and Cross-validation</h3>
+
+<p>Split the cleaned training data into training and testing sets. 
+Use "random forest" algorithm in caret package and all other variables in the training set in the model training.
+Apply the modelFit on the testing set for cross-validation.</p>
+
+<div class="highlight highlight-r"><pre><span class="pl-vo">inTrain</span> <span class="pl-k">&lt;-</span> createDataPartition(<span class="pl-v">y</span><span class="pl-k">=</span><span class="pl-vo">data</span><span class="pl-k">$</span><span class="pl-vo">classe</span>, <span class="pl-v">p</span><span class="pl-k">=</span> <span class="pl-c1">0.7</span>, <span class="pl-v">list</span><span class="pl-k">=</span><span class="pl-c1">FALSE</span>)
+<span class="pl-vo">training</span> <span class="pl-k">&lt;-</span> <span class="pl-vo">data</span>[<span class="pl-vo">inTrain</span>,]
+<span class="pl-vo">testing</span> <span class="pl-k">&lt;-</span> <span class="pl-vo">data</span>[<span class="pl-k">-</span><span class="pl-vo">inTrain</span>,]
+<span class="pl-vo">modelFit</span> <span class="pl-k">&lt;-</span> train(<span class="pl-vo">training</span><span class="pl-k">$</span><span class="pl-vo">classe</span> <span class="pl-k">~</span>., <span class="pl-v">data</span> <span class="pl-k">=</span> <span class="pl-vo">training</span>, <span class="pl-v">method</span> <span class="pl-k">=</span> <span class="pl-s1"><span class="pl-pds">"</span>rf<span class="pl-pds">"</span></span>)
+<span class="pl-vo">test</span> <span class="pl-k">&lt;-</span> predict(<span class="pl-vo">modelFit</span>, <span class="pl-v">newdata</span> <span class="pl-k">=</span> <span class="pl-vo">testing</span>)
+confusionMatrix(<span class="pl-vo">testing</span><span class="pl-k">$</span><span class="pl-vo">classe</span>, <span class="pl-vo">test</span>)</pre></div>
+
+<p>Results and analysis: </p>
+
+<p>The cross-validation shows the accuracy of this model is 0.9941. 
+Therefore, the out of sample error is (1 - Accuracy) = 0.0059.</p>
+
+<div class="highlight highlight-r"><pre><span class="pl-vo">Confusion</span> <span class="pl-vo">Matrix</span> <span class="pl-vo">and</span> <span class="pl-vo">Statistics</span>
+
+          <span class="pl-vo">Reference</span>
+<span class="pl-vo">Prediction</span>    <span class="pl-vo">A</span>    <span class="pl-vo">B</span>    <span class="pl-vo">C</span>    <span class="pl-vo">D</span>    <span class="pl-vo">E</span>
+         <span class="pl-vo">A</span> <span class="pl-c1">1674</span>    <span class="pl-c1">0</span>    <span class="pl-c1">0</span>    <span class="pl-c1">0</span>    <span class="pl-c1">0</span>
+         <span class="pl-vo">B</span>    <span class="pl-c1">8</span> <span class="pl-c1">1129</span>    <span class="pl-c1">2</span>    <span class="pl-c1">0</span>    <span class="pl-c1">0</span>
+         <span class="pl-vo">C</span>    <span class="pl-c1">0</span>    <span class="pl-c1">3</span> <span class="pl-c1">1016</span>    <span class="pl-c1">7</span>    <span class="pl-c1">0</span>
+         <span class="pl-vo">D</span>    <span class="pl-c1">0</span>    <span class="pl-c1">0</span>   <span class="pl-c1">10</span>  <span class="pl-c1">953</span>    <span class="pl-c1">1</span>
+         <span class="pl-vo">E</span>    <span class="pl-c1">0</span>    <span class="pl-c1">0</span>    <span class="pl-c1">2</span>    <span class="pl-c1">2</span> <span class="pl-c1">1078</span>
+
+<span class="pl-vo">Overall</span> <span class="pl-vo">Statistics</span>
+
+               <span class="pl-vo">Accuracy</span> <span class="pl-k">:</span> <span class="pl-c1">0.9941</span>          
+                 <span class="pl-c1">95</span>% <span class="pl-vo">CI</span> <span class="pl-k">:</span> (<span class="pl-c1">0.9917</span>, <span class="pl-c1">0.9959</span>)
+    <span class="pl-vo">No</span> <span class="pl-vo">Information</span> <span class="pl-vo">Rate</span> <span class="pl-k">:</span> <span class="pl-c1">0.2858</span>          
+    <span class="pl-vo">P</span><span class="pl-k">-</span><span class="pl-vo">Value</span> [<span class="pl-vo">Acc</span> <span class="pl-k">&gt;</span> <span class="pl-vo">NIR</span>] <span class="pl-k">:</span> <span class="pl-k">&lt;</span> <span class="pl-c1">2.2e-16</span>       
+
+                  <span class="pl-vo">Kappa</span> <span class="pl-k">:</span> <span class="pl-c1">0.9925</span>          
+ <span class="pl-vo">Mcnemar</span><span class="pl-s1"><span class="pl-pds">'</span>s Test P-Value : NA              </span>
+<span class="pl-s1"></span>
+<span class="pl-s1">Statistics by Class:</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">                     Class: A Class: B Class: C Class: D Class: E</span>
+<span class="pl-s1">Sensitivity            0.9952   0.9973   0.9864   0.9906   0.9991</span>
+<span class="pl-s1">Specificity            1.0000   0.9979   0.9979   0.9978   0.9992</span>
+<span class="pl-s1">Pos Pred Value         1.0000   0.9912   0.9903   0.9886   0.9963</span>
+<span class="pl-s1">Neg Pred Value         0.9981   0.9994   0.9971   0.9982   0.9998</span>
+<span class="pl-s1">Prevalence             0.2858   0.1924   0.1750   0.1635   0.1833</span>
+<span class="pl-s1">Detection Rate         0.2845   0.1918   0.1726   0.1619   0.1832</span>
+<span class="pl-s1">Detection Prevalence   0.2845   0.1935   0.1743   0.1638   0.1839</span>
+<span class="pl-s1">Balanced Accuracy      0.9976   0.9976   0.9922   0.9942   0.9991</span></pre></div>
+
+<h3>
+<a id="final-predictions-on-data_test-from-pml-testingcsv-file" class="anchor" href="#final-predictions-on-data_test-from-pml-testingcsv-file" aria-hidden="true"><span class="octicon octicon-link"></span></a>Final predictions on data_test from "pml-testing.csv" file</h3>
+
+<div class="highlight highlight-r"><pre><span class="pl-vo">prediction</span> <span class="pl-k">&lt;-</span> predict(<span class="pl-vo">modelFit</span>, <span class="pl-v">newdata</span> <span class="pl-k">=</span> <span class="pl-vo">data_test</span>)
+<span class="pl-vo">prediction</span>
+ [<span class="pl-c1">1</span>] <span class="pl-vo">B</span> <span class="pl-vo">A</span> <span class="pl-vo">B</span> <span class="pl-vo">A</span> <span class="pl-vo">A</span> <span class="pl-vo">E</span> <span class="pl-vo">D</span> <span class="pl-vo">B</span> <span class="pl-vo">A</span> <span class="pl-vo">A</span> <span class="pl-vo">B</span> <span class="pl-vo">C</span> <span class="pl-vo">B</span> <span class="pl-vo">A</span> <span class="pl-vo">E</span> <span class="pl-vo">E</span> <span class="pl-vo">A</span> <span class="pl-vo">B</span> <span class="pl-vo">B</span> <span class="pl-vo">B</span>
+<span class="pl-vo">Levels</span><span class="pl-k">:</span> <span class="pl-vo">A</span> <span class="pl-vo">B</span> <span class="pl-vo">C</span> <span class="pl-vo">D</span> <span class="pl-vo">E</span></pre></div>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Pml course project maintained by <a href="https://github.com/WenJuan-Huang">WenJuan-Huang</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
