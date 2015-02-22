@@ -1,25 +1,12 @@
-> # Download training and testing data files
-> download.file("http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv", 
-+               destfile = "pml-training.csv")
-trying URL 'http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv'
-Content type 'text/csv' length 12202745 bytes (11.6 Mb)
-opened URL
-==================================================
-downloaded 11.6 Mb
->
-> download.file("http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv", 
-+               destfile = "pml-testing.csv")
-trying URL 'http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv'
-Content type 'text/csv' length 15113 bytes (14 Kb)
-opened URL
-==================================================
-downloaded 14 Kb
-> 
-> # Pre-processing data
+# Practical Mechine Learning Course Project Writeup
+
+## Download training and testing data files
+> download.file("http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv", destfile = "pml-training.csv")
+> download.file("http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv", destfile = "pml-testing.csv")
+
+## Pre-processing data
 > # Read the raw data and set the classe as factor.??? 
 > library(caret)
-Loading required package: lattice
-Loading required package: ggplot2
 > set.seed(12463)
 > data <- read.csv("pml-training.csv", stringsAsFactors=FALSE)
 > data$classe <- as.factor(data$classe)
