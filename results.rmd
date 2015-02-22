@@ -27,6 +27,7 @@ data_test <- read.csv("pml-testing.csv", stringsAsFactors=FALSE)
 ``` 
 
 Then clean the data: 
+
 a. Removing columns with features not related to precition outcomes (first 7 columns)
 ```r
 data <- data[,-c(1:7)]
@@ -38,6 +39,7 @@ data <- data[,-nearZeroVar(data)]
 data_test <- data_test[,-nearZeroVar(data_test)]
 ```
 c. Removing columns with too many NAs (>90%)
+
 function 1: 'def_NAs' define variables with na > 90% 
 ```r
 def_NAs <- function(value){
@@ -49,17 +51,19 @@ def_NAs <- function(value){
         invisible(res);                              # return a invisible copy of the results
 }
 ```
+Apply the function on the pml-training data
 ```r
 vars_90NAs <- sapply(data, def_NAs) # find columns with NA > 90%
 data <- data[,!vars_90NAs] # no NA in data anymore in this case
 ```
-For the data_test (testing set) 
+Apply the function on the pml-testing data 
 ```r
 vars_90NAs_test <- sapply(data_test, def_NAs) 
 data_test <- data_test[,!vars_90NAs_test] 
 ```
 
 ### Prediction and Cross-validation
+
 Split the cleaned training data into training and testing sets. 
 Use "random forest" algorithm in caret package and all other variables in the training set in the model training.
 Apply the modelFit on the testing set for cross-validation.
@@ -72,6 +76,7 @@ test <- predict(modelFit, newdata = testing)
 confusionMatrix(testing$classe, test)
 ```
 Results and analysis: 
+
 The cross-validation shows the accuracy of this model is 0.9941. 
 Therefore, the out of sample error is (1 - Accuracy) = 0.0059.
 ```r
